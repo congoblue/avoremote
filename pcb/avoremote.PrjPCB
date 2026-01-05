@@ -28,7 +28,7 @@ PowerPortNamesTakePriority=0
 PushECOToAnnotationFile=1
 DItemRevisionGUID=
 ReportSuppressedErrorsInMessages=0
-OutputPath=Project Outputs for avoremote
+OutputPath=
 LogFolderPath=
 
 [Preferences]
@@ -83,6 +83,66 @@ ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
 
+[GeneratedDocument1]
+DocumentPath=.\avoremote.DRR
+DItemRevisionGUID=
+
+[GeneratedDocument2]
+DocumentPath=.\avoremote.EXTREP
+DItemRevisionGUID=
+
+[GeneratedDocument3]
+DocumentPath=.\avoremote.GBL
+DItemRevisionGUID=
+
+[GeneratedDocument4]
+DocumentPath=.\avoremote.GBO
+DItemRevisionGUID=
+
+[GeneratedDocument5]
+DocumentPath=.\avoremote.GBP
+DItemRevisionGUID=
+
+[GeneratedDocument6]
+DocumentPath=.\avoremote.GBS
+DItemRevisionGUID=
+
+[GeneratedDocument7]
+DocumentPath=.\avoremote.GM2
+DItemRevisionGUID=
+
+[GeneratedDocument8]
+DocumentPath=.\avoremote.GTL
+DItemRevisionGUID=
+
+[GeneratedDocument9]
+DocumentPath=.\avoremote.GTO
+DItemRevisionGUID=
+
+[GeneratedDocument10]
+DocumentPath=.\avoremote.GTP
+DItemRevisionGUID=
+
+[GeneratedDocument11]
+DocumentPath=.\avoremote.GTS
+DItemRevisionGUID=
+
+[GeneratedDocument12]
+DocumentPath=.\avoremote.LDP
+DItemRevisionGUID=
+
+[GeneratedDocument13]
+DocumentPath=.\avoremote.REP
+DItemRevisionGUID=
+
+[GeneratedDocument14]
+DocumentPath=.\avoremote.RUL
+DItemRevisionGUID=
+
+[GeneratedDocument15]
+DocumentPath=.\avoremote.TXT
+DItemRevisionGUID=
+
 [Configuration1]
 Name=Default Configuration
 ParameterCount=0
@@ -94,7 +154,7 @@ GenerateBOM=0
 OutputJobsCount=0
 
 [Generic_EDE]
-OutputDir=Project Outputs for avoremote
+OutputDir=
 
 [OutputGroup1]
 Name=Netlist Outputs
