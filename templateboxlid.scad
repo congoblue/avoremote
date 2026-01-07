@@ -140,13 +140,13 @@ difference () {
 
 
 //pcb pillars
-    pcbpillar (0,0,5-height_z/2+plate,9);
-    pcbpillar (0,34,5-height_z/2+plate,9);
-    pcbpillar (-82,34,5-height_z/2+plate,9);
-    pcbpillar (94,34,5-height_z/2+plate,9);
-    pcbpillar (-32,-37,5-height_z/2+plate,9);
-    pcbpillar (-82,-37,5-height_z/2+plate,9);
-    pcbpillar (94,-37,5-height_z/2+plate,9);
+    pcbpillar (0,0,4.5-height_z/2+plate,9.5);
+    pcbpillar (0,34,4.5-height_z/2+plate,9.5);
+    pcbpillar (-82,34,4.5-height_z/2+plate,9.5);
+    pcbpillar (94,34,4.5-height_z/2+plate,9.5);
+    pcbpillar (-32,-37,4.5-height_z/2+plate,9.5);
+    pcbpillar (-82,-37,4.5-height_z/2+plate,9.5);
+    pcbpillar (94,-37,4.5-height_z/2+plate,9.5);
 
 
 module pcbpillar(xp,yp,zp,ht)

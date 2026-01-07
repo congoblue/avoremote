@@ -24,7 +24,7 @@ difference() {
     
     translate ([0,0,0]) cylinder (h=6,r=inner_dia/2); //bottom recess
 
-    translate ([18,0,20]) sphere (r=10); //finger dimple
+    translate ([17,0,19]) sphere (r=10); //finger dimple
 
 }
      
