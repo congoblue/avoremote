@@ -1,0 +1,10 @@
+/pcb/History
+/pcb/__Previews
+*.REP
+*.RUL
+*.LDP
+*.EXTREP
+*.DRR
+*.APR_LIB
+pcb/Status Report.Txt
+/pcb/gbrfiles-2026-1-2
