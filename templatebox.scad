@@ -10,7 +10,7 @@ cornerradius = 4.0;          // Radius of the corners
                              //   for the press-in nuts!
 
        // Those settings are more or less independent from the cover
-height_z     = 20;           // Heigth of the lower part. Total height is this value plus
+height_z     = 25;           // Heigth of the lower part. Total height is this value plus
                              //   the height of the cover
 plate        = 1.4;          // Thickness of the bottom plain
 
@@ -82,6 +82,9 @@ difference () {
    };
 
 // Space for the construction of holes, breakouts, ... 
+
+    //hole for usb
+    translate ([-width_x/2+54,debth_y/2,-5.5]) cube ([12,20,7],center=true);
 
 
 };
