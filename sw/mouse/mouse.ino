@@ -1,5 +1,5 @@
 #include <AbsMouse.h> 
-
+#include <EEPROM.h>
 #include <math.h> 
 
 uint8_t pinstate=1, KeyHit=0, LastKey, seq=0, faderactive0=0, faderactive1=0;  
@@ -9,13 +9,13 @@ int32_t timea=0,timeb=0,timec=0;
 uint8_t EncaChange, EncbChange, EnccChange;
 uint8_t EncaNew, EncbNew, EnccNew;
 
-int preva0, preva1, encoffset;
+int preva0, preva1, encoffset, Swiggle;
 
 uint32_t atime0=0,atime1=0,v,fp;
 
-uint32_t KeyState=0, kr=0;
+uint32_t KeyState=0, kr=0, SetupKd=0;
 
-uint8_t mousedn=0, setupmode=0;
+uint8_t mousedn=0, SetupMode=0;
 
 uint32_t xp[32],yp[32];
 
@@ -79,8 +79,22 @@ void setup() {
   pinMode(AN0, INPUT); //fader 1
   pinMode(AN1, INPUT); //fader 2
 
-  xp[24]=1627;
-  yp[24]=859;
+  if (EEPROM.read(0)==0xAA) //eeprom is initialised
+  {
+    for (int i=0; i<32; i++)
+    {
+      xp[i]=EEPROM.read(i*4+1)+256*EEPROM.read(i*4+2);
+      yp[i]=EEPROM.read(i*4+3)+256*EEPROM.read(i*4+4);
+    }
+  }
+  else
+  {
+    for (int i=0; i<32; i++)
+    {
+      xp[i]=10+i*20;
+      yp[i]=10;
+    }
+  }
 
   delay(1000); // Let USB settle 
 
@@ -147,6 +161,19 @@ uint8_t SwRead(void)
    return v;
 }
 
+void StorePos(uint8_t key)
+{
+  xp[key]=(analogRead(AN0)*1920)/1024;
+  yp[key]=(analogRead(AN1)*1080)/1024;
+  if (EEPROM.read(0)!=0xAA) EEPROM.write(0,0xAA); //make sure eeprom flagged as init
+  EEPROM.write(key*4+1,xp[key]&0xFF); EEPROM.write(key*4+2,(xp[key]>>8)&0xFF);
+  EEPROM.write(key*4+3,yp[key]&0xFF); EEPROM.write(key*4+4,(yp[key]>>8)&0xFF);
+}
+
+const uint8_t encchange[25]={
+1,1,1,1,2,2,2,2,3,3, 3,4,4,4,5,5,6,6,7,8, 9,10,12,15,20
+};
+
 void loop() { 
 
   static uint8_t x=0;
@@ -161,28 +188,35 @@ void loop() {
   if (EncaChange)
   {
     EncaChange=0;
-    if (EncaNew)
+    if (SetupMode==0)
     {
-      EncaNew=0;
-      if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); faderactive0=0; faderactive1=0; timeb=0; timec=0;}
-      AbsMouse.move(xp[24],yp[24]); 
-      AbsMouse.press(MOUSE_LEFT);
-      encoffset=0;
-      mousedn=1;
+      if (EncaNew)
+      {
+        EncaNew=0;
+        if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); delay(100); faderactive0=0; faderactive1=0; timeb=0; timec=0;}
+        AbsMouse.move(xp[24],yp[24]); 
+        AbsMouse.press(MOUSE_LEFT);
+        encoffset=0;
+        mousedn=1;
+      }
+      else
+      {
+        //Serial.println(Enca);
+        if (abs(Enca)>100) v=1; else v=encchange[(100-abs(Enca))/4];
+        if (Enca>0) 
+        {
+          encoffset+=v; 
+        }
+        else 
+        {
+          if (encoffset+xp[24]>v) encoffset-=v; else encoffset=xp[24];
+        }      
+        AbsMouse.move(xp[24]+encoffset,yp[24]); 
+      }
     }
     else
     {
-      Serial.println(Enca);
-      if (abs(Enca)>=50) v=1; else v=1+(50-abs(Enca))/2;
-      if (Enca>0) 
-      {
-        encoffset+=v; 
-      }
-      else 
-      {
-        if (encoffset+xp[24]>v) encoffset-=v; else encoffset=xp[24];
-      }      
-      AbsMouse.move(xp[24]+encoffset,yp[24]); 
+       StorePos(24);
     }
 
   }
@@ -190,39 +224,71 @@ void loop() {
   if (EncbChange)
   {
     EncbChange=0;
-    if (EncbNew)
+    if (SetupMode==0)
     {
-      EncbNew=0;
-      if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); faderactive0=0; faderactive1=0; timea=0; timec=0;}
-      AbsMouse.move(xp[25],yp[25]); 
-      AbsMouse.press(MOUSE_LEFT);
-      encoffset=0;
-      mousedn=1;
+      if (EncbNew)
+      {
+        EncbNew=0;
+        if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); delay(100); faderactive0=0; faderactive1=0; timea=0; timec=0;}
+        AbsMouse.move(xp[25],yp[25]); 
+        AbsMouse.press(MOUSE_LEFT);
+        encoffset=0;
+        mousedn=1;
+      }
+      else
+      {
+        if (abs(Encb)>100) v=1; else v=encchange[(100-abs(Encb))/4];
+        if (Encb>0) 
+        {
+          encoffset+=v; 
+        }
+        else 
+        {
+          if (encoffset+xp[25]>v) encoffset-=v; else encoffset=xp[25];
+        }      
+        AbsMouse.move(xp[25]+encoffset,yp[25]); 
+      }
     }
     else
     {
-      if (Encb>0) encoffset++; else encoffset--;
-      AbsMouse.move(xp[25]+encoffset,yp[25]); 
+       StorePos(25);
     }
+
   }
 
   if (EnccChange)
   {
     EnccChange=0;
-    if (EnccNew)
+    if (SetupMode==0)
     {
-      EnccNew=0;
-      if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); faderactive0=0; faderactive1=0; timea=0; timeb=0;}
-      AbsMouse.move(xp[26],yp[26]); 
-      AbsMouse.press(MOUSE_LEFT);
-      encoffset=0;
-      mousedn=1;
+      if (EnccNew)
+      {
+        EnccNew=0;
+        if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); delay(100); faderactive0=0; faderactive1=0; timea=0; timeb=0;}
+        AbsMouse.move(xp[26],yp[26]); 
+        AbsMouse.press(MOUSE_LEFT);
+        encoffset=0;
+        mousedn=1;
+      }
+      else
+      {
+        if (abs(Encc)>100) v=1; else v=encchange[(100-abs(Encc))/4];
+        if (Encc>0) 
+        {
+          encoffset+=v; 
+        }
+        else 
+        {
+          if (encoffset+xp[26]>v) encoffset-=v; else encoffset=xp[26];
+        }      
+        AbsMouse.move(xp[26]+encoffset,yp[26]); 
+      }
     }
     else
     {
-      if (Encc>0) encoffset++; else encoffset--;
-      AbsMouse.move(xp[26]+encoffset,yp[26]); 
+       StorePos(26);
     }
+
   }
 
 
@@ -288,83 +354,131 @@ void loop() {
        //Serial.print(KeyState,HEX);
     }
   }
+
+  //check for entering setup mode
+  if (KeyState==0x80)
+  {
+     if (SetupKd!=0)
+     {
+        if (millis()-SetupKd>10000) 
+        {
+          if (SetupMode==0) 
+          {
+            SetupMode=1; 
+            Serial.println("Start Setup mode");
+            SetupKd=0;
+          }
+          else 
+          {
+            SetupMode=0;
+            Serial.println("End Setup mode");
+            SetupKd=0;
+            AbsMouse.move(10,10); 
+          }
+        }
+     }
+     else 
+     {
+        SetupKd=millis();
+     }
+  }
+  else
+     SetupKd=0;
   
   //diagnostic
 
    if (KeyHit!=0)
    {
-      KeyHit=0;
+      //KeyHit=0;
       Serial.println(LastKey);
    }
 
+   //flash the LED
    ld++; 
-   if (ld==50) {digitalWrite(LED_BUILTIN,1);}
+   if (ld==50) {digitalWrite(LED_BUILTIN,1); Swiggle=2;}
    if (ld>=100) 
    {
       ld=0; 
       digitalWrite(LED_BUILTIN,0); 
+      Swiggle=0;
       //Serial.println(nowenc,HEX);
    }
 
    if (KeyHit!=0)
    {
       KeyHit=0;
-      AbsMouse.move(xp[LastKey],yp[LastKey]); 
-      AbsMouse.press(MOUSE_LEFT);
-      delay(100); 
-      AbsMouse.release(MOUSE_LEFT);
-      faderactive0=0;
-      delay(100); 
-   }
-
-   a0=analogRead(AN0);
-   if (abs(a0-preva0)>20)
-   {
-      //Serial.println(a0);
-      preva0=a0;
-      if (faderactive0==0) fp=a0; //this is a new move starting. Remember where we started off from
-      atime0=millis();
-      v=932+((1022-966)*2*(fp-a0)/1024);
-      AbsMouse.move(1361, v);
-      if (faderactive0==0) 
+      if (SetupMode==0)
       {
-            faderactive0=1;
-            if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); faderactive1=0; timea=0; timeb=0; timec=0;}
-            AbsMouse.press(MOUSE_LEFT);
-            mousedn=1;
+        AbsMouse.move(xp[LastKey],yp[LastKey]); 
+        AbsMouse.press(MOUSE_LEFT);
+        delay(100); 
+        AbsMouse.release(MOUSE_LEFT);
+        faderactive0=0;
+        delay(100); 
+      }
+      else //setupmode. Store the position
+      {         
+         StorePos(LastKey);
       }
    }
 
-   if ((faderactive0!=0)&&((millis()-atime0)>FADER_TIMEOUT))
+   if (SetupMode==0)
    {
-         AbsMouse.release(MOUSE_LEFT);
-         mousedn=0;
-         faderactive0=0;
-   }
+    a0=analogRead(AN0);
+    if (abs(a0-preva0)>20)
+    {
+        //Serial.println(a0);
+        preva0=a0;
+        if (faderactive0==0) fp=a0; //this is a new move starting. Remember where we started off from
+        atime0=millis();
+        v=yp[23]+120+(112*(fp-a0)/1024);
+        AbsMouse.move(xp[23], v);
+        if (faderactive0==0) 
+        {
+              faderactive0=1;
+              if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); faderactive1=0; timea=0; timeb=0; timec=0;}
+              AbsMouse.press(MOUSE_LEFT);
+              mousedn=1;
+        }
+    }
 
-   a1=analogRead(AN1);
-   if (abs(a1-preva1)>20)
-   {
-      //Serial.println(a1);
-      preva1=a1;
-      if (faderactive1==0) fp=a1; //this is a new move starting. Remember where we started off from
-      atime1=millis();
-      v=932+((1022-966)*2*(fp-a1)/1024);
-      AbsMouse.move(1361, v);
-      if (faderactive1==0) 
-      {
-            faderactive1=1;
-            if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); faderactive0=0; timea=0; timeb=0; timec=0;}
-            AbsMouse.press(MOUSE_LEFT);
-            mousedn=1;
-      }
-   }
+    if ((faderactive0!=0)&&((millis()-atime0)>FADER_TIMEOUT))
+    {
+          AbsMouse.release(MOUSE_LEFT);
+          mousedn=0;
+          faderactive0=0;
+    }
 
-   if ((faderactive1!=0)&&((millis()-atime1)>FADER_TIMEOUT))
+    a1=analogRead(AN1);
+    if (abs(a1-preva1)>20)
+    {
+        //Serial.println(a1);
+        preva1=a1;
+        if (faderactive1==0) fp=a1; //this is a new move starting. Remember where we started off from
+        atime1=millis();
+        v=yp[22]+120+(112*(fp-a1)/1024);
+        AbsMouse.move(xp[22], v);
+        if (faderactive1==0) 
+        {
+              faderactive1=1;
+              if (mousedn!=0) {AbsMouse.release(MOUSE_LEFT); faderactive0=0; timea=0; timeb=0; timec=0;}
+              AbsMouse.press(MOUSE_LEFT);
+              mousedn=1;
+        }
+    }
+
+    if ((faderactive1!=0)&&((millis()-atime1)>FADER_TIMEOUT))
+    {
+          AbsMouse.release(MOUSE_LEFT);
+          mousedn=0;
+          faderactive1=0;
+    }
+   }
+   else //setup mode. Sliders move the cursor
    {
-         AbsMouse.release(MOUSE_LEFT);
-         mousedn=0;
-         faderactive1=0;
+       a0=analogRead(AN0);
+       a1=analogRead(AN1);
+       AbsMouse.move((a0*1920)/1024+Swiggle, (a1*1080)/1024);
    }
 
   }
