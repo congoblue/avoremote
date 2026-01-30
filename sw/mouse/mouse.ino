@@ -11,7 +11,8 @@ uint8_t EncaNew, EncbNew, EnccNew;
 
 int preva0, preva1, encoffset, Swiggle;
 
-uint32_t atime0=0,atime1=0,v,fp;
+uint32_t atime0=0,atime1=0;
+int32_t fp,v;
 
 uint32_t KeyState=0, kr=0, SetupKd=0;
 
@@ -206,6 +207,7 @@ void loop() {
         if (Enca>0) 
         {
           encoffset+=v; 
+          if (xp[24]+encoffset>1919) {AbsMouse.release(MOUSE_LEFT); encoffset=0; EncaNew=1;}
         }
         else 
         {
@@ -241,6 +243,7 @@ void loop() {
         if (Encb>0) 
         {
           encoffset+=v; 
+          if (xp[25]+encoffset>1919) {AbsMouse.release(MOUSE_LEFT); encoffset=0; EncbNew=1;}
         }
         else 
         {
@@ -276,6 +279,7 @@ void loop() {
         if (Encc>0) 
         {
           encoffset+=v; 
+          if (xp[26]+encoffset>1919) {AbsMouse.release(MOUSE_LEFT); encoffset=0; EnccNew=1;}
         }
         else 
         {
@@ -431,7 +435,9 @@ void loop() {
         preva0=a0;
         if (faderactive0==0) fp=a0; //this is a new move starting. Remember where we started off from
         atime0=millis();
-        v=yp[23]+120+(112*(fp-a0)/1024);
+        v=yp[23]+120+(112*(int32_t)(fp-a0)/1024);
+        if (v>1079) v=1079; //stay on the screen
+        //Serial.println(v);
         AbsMouse.move(xp[23], v);
         if (faderactive0==0) 
         {
@@ -456,7 +462,8 @@ void loop() {
         preva1=a1;
         if (faderactive1==0) fp=a1; //this is a new move starting. Remember where we started off from
         atime1=millis();
-        v=yp[22]+120+(112*(fp-a1)/1024);
+        v=yp[22]+120+(112*(int32_t)(fp-a1)/1024);
+        if (v>1079) v=1079; //stay on the screen
         AbsMouse.move(xp[22], v);
         if (faderactive1==0) 
         {
